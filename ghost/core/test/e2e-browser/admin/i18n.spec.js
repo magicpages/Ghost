@@ -17,7 +17,7 @@ test.describe('i18n', () => {
             const adminPublicationPage = new AdminPublicationPage(sharedPage);
             await adminPublicationPage.visit();
             await adminPublicationPage.setLanguage('fr');
-            await expect(adminPublicationPage.languageField).toHaveValue('fr');
+            await expect(adminPublicationPage.languageField).toContainText('French (fr)');
 
             await new AdminDashboardPage(sharedPage).visit();
             await createPostDraft(sharedPage, postToCreate);
