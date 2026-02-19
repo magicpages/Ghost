@@ -53,9 +53,12 @@ module.exports = class AssetsMinificationBase {
         return async function serveMiddleware(req, res, next) {
             if (!self.ready) {
                 if (!self.loading) {
-                    self.loading = self.load().finally(() => {
-                        self.loading = null;
+                    const pending = self.load().finally(() => {
+                        if (self.loading === pending) {
+                            self.loading = null;
+                        }
                     });
+                    self.loading = pending;
                 }
                 await self.loading;
             }

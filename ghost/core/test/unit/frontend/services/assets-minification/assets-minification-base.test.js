@@ -139,6 +139,44 @@ describe('AssetsMinificationBase', function () {
             assert.equal(loadCallCount, 2);
         });
 
+        it('does not clobber a new loading promise when invalidate() is called mid-flight', async function () {
+            let loadCallCount = 0;
+            let resolveFirstLoad;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    if (loadCallCount === 1) {
+                        await new Promise((resolve) => {
+                            resolveFirstLoad = resolve;
+                        });
+                    }
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+            const middleware = assets.serveMiddleware();
+            const next = sinon.stub();
+
+            // First request starts load, which hangs
+            const firstRequest = middleware({}, {}, next);
+
+            // invalidate() mid-flight: clears loading and ready
+            assets.invalidate();
+
+            // Second request starts a new load since loading was cleared
+            const secondRequest = middleware({}, {}, next);
+
+            // First load settles — its .finally() must NOT clobber the second load
+            resolveFirstLoad();
+            await firstRequest;
+            await secondRequest;
+
+            assert.equal(loadCallCount, 2, 'load() should be called twice (once per invalidation cycle)');
+            assert.equal(next.callCount, 2);
+        });
+
         it('clears loading promise after load() completes', async function () {
             class TestAssets extends AssetsMinificationBase {
                 async load() {
