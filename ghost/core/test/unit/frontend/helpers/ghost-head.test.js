@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 
 const sinon = require('sinon');
 const {assertMatchSnapshot} = require('../../../utils/assertions');
@@ -15,6 +16,7 @@ const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
+const assetHash = require('../../../../core/frontend/services/asset-hash');
 const {settingsCache, settingsHelpers} = proxy;
 
 /**
@@ -32,7 +34,7 @@ async function testGhostHead(options) {
     const sodoSearchVersion = /sodo-search@~\d+\.\d+(\.\d+)?\//g;
     rendered = rendered.replace(sodoSearchVersion, 'sodo-search@~[[VERSION]]/');
 
-    should.exist(rendered);
+    assertExists(rendered);
     // Note: we need to convert the string to an object in order to use the snapshot feature
     assertMatchSnapshot({rendered});
     return rendered;
@@ -375,7 +377,7 @@ describe('{{ghost_head}} helper', function () {
 
         // @TODO: this is a LOT of mocking :/
         routingRegistryGetRssUrlStub = sinon.stub(routing.registry, 'getRssUrl').returns('http://localhost:65530/rss/');
-        sinon.stub(imageLib.imageSize, 'getImageSizeFromUrl').resolves();
+        sinon.stub(imageLib.cachedImageSizeFromUrl, 'getCachedImageSizeFromUrl').resolves();
         getStub = sinon.stub(settingsCache, 'get');
 
         getStub.withArgs('title').returns('Ghost');
@@ -387,6 +389,8 @@ describe('{{ghost_head}} helper', function () {
 
         // Force the usage of a fixed asset hash so we have reliable snapshots
         configUtils.set('assetHash', 'asset-hash');
+        // Disable file-based hashing so all assets use the fixed global hash above
+        sinon.stub(assetHash, 'getHashForFile').returns(null);
 
         makeFixtures();
     });
@@ -413,7 +417,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            sinon.assert.calledOnce(loggingErrorStub);
+            sinon.assert.notCalled(loggingErrorStub);
         });
 
         it('returns structured data on first index page', async function () {
@@ -527,7 +531,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            renderObject.post.should.eql(postBk);
+            assert.deepEqual(renderObject.post, postBk);
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', async function () {
@@ -545,7 +549,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            renderObject.post.should.eql(postBk);
+            assert.deepEqual(renderObject.post, postBk);
         });
 
         it('returns structured data on post page with fall back excerpt if no meta description provided', async function () {
@@ -563,7 +567,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
-            renderObject.post.should.eql(postBk);
+            assert.deepEqual(renderObject.post, postBk);
         });
 
         it('returns structured data if metaTitle and metaDescription have double quotes', async function () {
@@ -1267,7 +1271,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/sodo-search@/);
+            assert.match(rendered, /sodo-search@/);
         });
 
         it('includes locale in search', async function () {
@@ -1279,7 +1283,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/sodo-search@[^>]*?data-locale="en"/);
+            assert.match(rendered, /sodo-search@[^>]*?data-locale="en"/);
         });
     });
 
@@ -1351,7 +1355,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+            assert.match(rendered, /script defer src="\/public\/ghost-stats\.min\.js/);
         });
 
         it('does not include tracker script when web analytics is not enabled', async function () {
@@ -1365,7 +1369,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+            assert.doesNotMatch(rendered, /script defer src="\/public\/ghost-stats\.min\.js/);
         });
 
         it('includes tracker script with subdir', async function () {
@@ -1379,7 +1383,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/script defer src="\/blog\/public\/ghost-stats\.min\.js/);
+            assert.match(rendered, /script defer src="\/blog\/public\/ghost-stats\.min\.js/);
         });
 
         it('with all tb_variables set to undefined on logged out home page', async function () {
@@ -1453,7 +1457,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/data-datasource="analytics_events"/);
+            assert.match(rendered, /data-datasource="analytics_events"/);
         });
 
         it('does not include tracker script when preview is set', async function () {
@@ -1463,7 +1467,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js"/);
+            assert.doesNotMatch(rendered, /script defer src="\/public\/ghost-stats\.min\.js"/);
         });
 
         it('uses the provided host/endpoint from config', async function () {
@@ -1475,7 +1479,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
+            assert.match(rendered, /data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
         });
 
         it('includes local tracker script when local is set', async function () {
@@ -1489,7 +1493,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
+            assert.match(rendered, /data-host="http:\/\/localhost:7181\/v0\/events"/);
         });
 
         it('does not include tracker token when it is not set', async function () {
@@ -1502,7 +1506,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/data-token=/);
+            assert.doesNotMatch(rendered, /data-token=/);
         });
 
         it('does not include tracker token when env is production', async function () {
@@ -1516,7 +1520,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/data-token=/);
+            assert.doesNotMatch(rendered, /data-token=/);
         });
 
         it('does not include tracker script in preview context', async function () {
@@ -1527,7 +1531,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
-            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+            assert.doesNotMatch(rendered, /script defer src="\/public\/ghost-stats\.min\.js/);
         });
     });
 
@@ -1543,9 +1547,9 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             })});
-            rendered.should.match(/portal@/);
-            rendered.should.match(/sodo-search@/);
-            rendered.should.match(/js.stripe.com/);
+            assert.match(rendered, /portal@/);
+            assert.match(rendered, /sodo-search@/);
+            assert.match(rendered, /js.stripe.com/);
         });
         it('when exclude contains search', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1558,9 +1562,9 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             })});
-            rendered.should.not.match(/sodo-search@/);
-            rendered.should.match(/portal@/);
-            rendered.should.match(/js.stripe.com/);
+            assert.doesNotMatch(rendered, /sodo-search@/);
+            assert.match(rendered, /portal@/);
+            assert.match(rendered, /js.stripe.com/);
         });
         it('when exclude contains portal', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1573,9 +1577,9 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             })});
-            rendered.should.match(/sodo-search@/);
-            rendered.should.not.match(/portal@/);
-            rendered.should.match(/js.stripe.com/);
+            assert.match(rendered, /sodo-search@/);
+            assert.doesNotMatch(rendered, /portal@/);
+            assert.match(rendered, /js.stripe.com/);
         });
         it('can handle multiple excludes', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1588,9 +1592,9 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             })});
-            rendered.should.not.match(/sodo-search@/);
-            rendered.should.not.match(/portal@/);
-            rendered.should.match(/js.stripe.com/);
+            assert.doesNotMatch(rendered, /sodo-search@/);
+            assert.doesNotMatch(rendered, /portal@/);
+            assert.match(rendered, /js.stripe.com/);
         });
 
         it('shows the announcement when exclude does not contain announcement', async function () {
@@ -1606,10 +1610,10 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             })});
-            rendered.should.match(/sodo-search@/);
-            rendered.should.match(/portal@/);
-            rendered.should.match(/js.stripe.com/);
-            rendered.should.match(/announcement-bar@/);
+            assert.match(rendered, /sodo-search@/);
+            assert.match(rendered, /portal@/);
+            assert.match(rendered, /js.stripe.com/);
+            assert.match(rendered, /announcement-bar@/);
         });
         it('does not show the announcement when exclude contains announcement', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1624,11 +1628,11 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             })});
-            rendered.should.match(/sodo-search@/);
-            rendered.should.match(/portal@/);
-            rendered.should.match(/js.stripe.com/);
-            rendered.should.match(/generator/);
-            rendered.should.not.match(/announcement-bar@/);
+            assert.match(rendered, /sodo-search@/);
+            assert.match(rendered, /portal@/);
+            assert.match(rendered, /js.stripe.com/);
+            assert.match(rendered, /generator/);
+            assert.doesNotMatch(rendered, /announcement-bar@/);
         });
 
         it('does not load the comments script when exclude contains comment_counts', async function () {
@@ -1640,7 +1644,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.not.match(/comment-counts.min.js/);
+            assert.doesNotMatch(rendered, /comment-counts.min.js/);
         });
 
         it('loads card assets when not excluded', async function () {
@@ -1654,8 +1658,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.match(/cards.min.js/);
-            rendered.should.match(/cards.min.css/);
+            assert.match(rendered, /cards.min.js/);
+            assert.match(rendered, /cards.min.css/);
         });
         it('does not load card assets when excluded with card_assets', async function () {
             sinon.stub(cardAssets, 'hasFile').returns(true);
@@ -1666,8 +1670,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.not.match(/cards.min.js/);
-            rendered.should.not.match(/cards.min.css/);
+            assert.doesNotMatch(rendered, /cards.min.js/);
+            assert.doesNotMatch(rendered, /cards.min.css/);
         });
         it('does not load meta tags when excluded with metadata', async function () {
             let rendered = await testGhostHead({hash: {exclude: 'metadata'}, ...testUtils.createHbsResponse({
@@ -1677,7 +1681,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.not.match(/<link rel="canonical"/);
+            assert.doesNotMatch(rendered, /<link rel="canonical"/);
         });
         it('does not load schema when excluded with schema', async function () {
             let rendered = await testGhostHead({hash: {exclude: 'schema'}, ...testUtils.createHbsResponse({
@@ -1687,7 +1691,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.not.match(/<script type="application\/ld\+json"/);
+            assert.doesNotMatch(rendered, /<script type="application\/ld\+json"/);
         });
         it('does not load og: or twitter: attributes when excludd with social_data', async function () {
             let rendered = await testGhostHead({hash: {exclude: 'social_data'}, ...testUtils.createHbsResponse({
@@ -1697,8 +1701,8 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.not.match(/<meta property="og:/);
-            rendered.should.not.match(/<meta property="twitter:/);
+            assert.doesNotMatch(rendered, /<meta property="og:/);
+            assert.doesNotMatch(rendered, /<meta property="twitter:/);
         });
         it('does not load cta styles when excluded with cta_styles', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1710,7 +1714,7 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             })});
-            rendered.should.not.match(/.gh-post-upgrade-cta-content/);
+            assert.doesNotMatch(rendered, /.gh-post-upgrade-cta-content/);
         });
     });
 });

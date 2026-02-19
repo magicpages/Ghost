@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 // Stuff we are testing
@@ -42,8 +42,8 @@ describe('{{#has}} helper', function () {
             // {{#has tag="invalid, bar, wat"}}
             callHasHelper(thisCtx, {tag: 'invalid, bar, wat'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('should handle tags with case-insensitivity', function () {
@@ -52,8 +52,8 @@ describe('{{#has}} helper', function () {
             // {{#has tag="GhoSt"}}
             callHasHelper(thisCtx, {tag: 'GhoSt'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('should match exact tags, not superstrings', function () {
@@ -61,8 +61,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'magic'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('should match exact tags, not substrings', function () {
@@ -70,8 +70,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'magical'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('should handle tag list that validates false', function () {
@@ -79,8 +79,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'much, such, wow'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('should not do anything if there are no attributes', function () {
@@ -88,8 +88,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx);
 
-            fn.called.should.be.false();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, false);
         });
 
         it('should not do anything when an invalid attribute is given', function () {
@@ -97,8 +97,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {invalid: 'nonsense'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, false);
         });
 
         it('count:0', function () {
@@ -106,8 +106,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:0'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:3', function () {
@@ -115,8 +115,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:3'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('count:11', function () {
@@ -124,8 +124,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:11'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:>3', function () {
@@ -133,8 +133,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:>3'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:>2', function () {
@@ -142,8 +142,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:>2'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('count:<1', function () {
@@ -151,8 +151,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:<1'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:<3', function () {
@@ -160,8 +160,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {tag: 'count:<3'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
     });
 
@@ -171,8 +171,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('should handle author list that evaluates to false', function () {
@@ -180,8 +180,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('should handle authors with case-insensitivity', function () {
@@ -189,8 +189,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'joe, sAm, pat'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('should handle tags and authors like an OR query (pass)', function () {
@@ -198,8 +198,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('should handle tags and authors like an OR query when match both author and tag (pass)', function () {
@@ -207,8 +207,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('should handle tags and authors like an OR query (fail)', function () {
@@ -216,8 +216,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'joe, sam, pat', tag: 'much, such, wow'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:0', function () {
@@ -225,8 +225,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:0'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:1', function () {
@@ -234,8 +234,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:1'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('count:>1 (fail)', function () {
@@ -243,8 +243,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:>1'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:>1 (pass)', function () {
@@ -252,8 +252,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:>1'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('count:>2', function () {
@@ -261,8 +261,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:>2'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:<1', function () {
@@ -270,8 +270,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:<1'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('count:<3', function () {
@@ -279,8 +279,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {author: 'count:<3'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
     });
 
@@ -290,8 +290,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: '6'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('will match on an exact number (fail)', function () {
@@ -299,8 +299,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: '6'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('will match on an exact number (loop)', function () {
@@ -310,9 +310,9 @@ describe('{{#has}} helper', function () {
                 callHasHelper(thisCtx, {number: '6'});
             }
 
-            fn.calledOnce.should.be.true();
-            inverse.called.should.be.true();
-            inverse.callCount.should.eql(7);
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.called, true);
+            assert.equal(inverse.callCount, 7);
         });
 
         it('will match on a number list (pass)', function () {
@@ -320,8 +320,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: '1, 3, 6,12'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('will match on a number list (fail)', function () {
@@ -329,8 +329,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: '1, 3, 6,12'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('will match on a number list (loop)', function () {
@@ -340,10 +340,10 @@ describe('{{#has}} helper', function () {
                 callHasHelper(thisCtx, {number: '1, 3, 6,12'});
             }
 
-            fn.called.should.be.true();
-            fn.callCount.should.eql(3);
-            inverse.called.should.be.true();
-            inverse.callCount.should.eql(5);
+            assert.equal(fn.called, true);
+            assert.equal(fn.callCount, 3);
+            assert.equal(inverse.called, true);
+            assert.equal(inverse.callCount, 5);
         });
 
         it('will match on a nth pattern (pass)', function () {
@@ -351,8 +351,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: 'nth:3'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('will match on a nth pattern (fail)', function () {
@@ -360,8 +360,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: 'nth:3'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('will match on a nth pattern (loop)', function () {
@@ -371,10 +371,10 @@ describe('{{#has}} helper', function () {
                 callHasHelper(thisCtx, {number: 'nth:3'});
             }
 
-            fn.called.should.be.true();
-            fn.callCount.should.eql(2);
-            inverse.called.should.be.true();
-            inverse.callCount.should.eql(6);
+            assert.equal(fn.called, true);
+            assert.equal(fn.callCount, 2);
+            assert.equal(inverse.called, true);
+            assert.equal(inverse.callCount, 6);
         });
 
         it('fails gracefully if there is no number property', function () {
@@ -382,8 +382,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: 'nth:3'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('fails gracefully if there is no data property', function () {
@@ -391,8 +391,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {number: 'nth:3'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -402,8 +402,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: '6'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('will match on an exact index (fail)', function () {
@@ -411,8 +411,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: '6'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('will match on an exact index (loop)', function () {
@@ -422,9 +422,9 @@ describe('{{#has}} helper', function () {
                 callHasHelper(thisCtx, {index: '6'});
             }
 
-            fn.calledOnce.should.be.true();
-            inverse.called.should.be.true();
-            inverse.callCount.should.eql(7);
+            assert.equal(fn.calledOnce, true);
+            assert.equal(inverse.called, true);
+            assert.equal(inverse.callCount, 7);
         });
 
         it('will match on an index list (pass)', function () {
@@ -432,8 +432,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: '1, 3, 6,12'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('will match on an index list (fail)', function () {
@@ -441,8 +441,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: '1, 3, 6,12'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('will match on an index list (loop)', function () {
@@ -452,10 +452,10 @@ describe('{{#has}} helper', function () {
                 callHasHelper(thisCtx, {index: '1, 3, 6,12'});
             }
 
-            fn.called.should.be.true();
-            fn.callCount.should.eql(3);
-            inverse.called.should.be.true();
-            inverse.callCount.should.eql(5);
+            assert.equal(fn.called, true);
+            assert.equal(fn.callCount, 3);
+            assert.equal(inverse.called, true);
+            assert.equal(inverse.callCount, 5);
         });
 
         it('will match on a nth pattern (pass)', function () {
@@ -463,8 +463,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: 'nth:3'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('will match on a nth pattern (fail)', function () {
@@ -472,8 +472,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: 'nth:3'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('will match on a nth pattern (loop)', function () {
@@ -483,10 +483,10 @@ describe('{{#has}} helper', function () {
                 callHasHelper(thisCtx, {index: 'nth:3'});
             }
 
-            fn.called.should.be.true();
-            fn.callCount.should.eql(3);
-            inverse.called.should.be.true();
-            inverse.callCount.should.eql(5);
+            assert.equal(fn.called, true);
+            assert.equal(fn.callCount, 3);
+            assert.equal(inverse.called, true);
+            assert.equal(inverse.callCount, 5);
         });
 
         it('fails gracefully if there is no index property', function () {
@@ -494,8 +494,8 @@ describe('{{#has}} helper', function () {
 
             callHasHelper(thisCtx, {index: 'nth:3'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -506,8 +506,8 @@ describe('{{#has}} helper', function () {
             // {{#has slug="welcome"}}
             callHasHelper(thisCtx, {slug: 'welcome'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on an exact slug (fail)', function () {
@@ -516,8 +516,8 @@ describe('{{#has}} helper', function () {
             // {{#has slug="welcome-to-ghost"}}
             callHasHelper(thisCtx, {slug: 'welcome-to-ghost'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('fails gracefully if there is no slug (fail)', function () {
@@ -526,8 +526,8 @@ describe('{{#has}} helper', function () {
             // {{#has slug="welcome-to-ghost"}}
             callHasHelper(thisCtx, {slug: 'welcome-to-ghost'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -538,8 +538,8 @@ describe('{{#has}} helper', function () {
             // {{#has visibility="paid"}}
             callHasHelper(thisCtx, {visibility: 'paid'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on an exact visibility (fail)', function () {
@@ -548,8 +548,8 @@ describe('{{#has}} helper', function () {
             // {{#has visibility="members"}}
             callHasHelper(thisCtx, {visibility: 'members'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('fails gracefully if there is no visibility (fail)', function () {
@@ -558,8 +558,8 @@ describe('{{#has}} helper', function () {
             // {{#has visibility="welcome-to-ghost"}}
             callHasHelper(thisCtx, {visibility: 'paid'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -570,8 +570,8 @@ describe('{{#has}} helper', function () {
             // {{#has id="5981fbed98141579627e9a5a"}}
             callHasHelper(thisCtx, {id: '5981fbed98141579627e9a5a'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on an exact id (fail)', function () {
@@ -580,8 +580,8 @@ describe('{{#has}} helper', function () {
             // {{#has id="5981fbed98141579627e9a5a"}}
             callHasHelper(thisCtx, {id: '5981fbed98141579627e9abc'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('fails gracefully if there is no id (fail)', function () {
@@ -590,8 +590,8 @@ describe('{{#has}} helper', function () {
             // {{#has id="5981fbed98141579627e9a5a"}}
             callHasHelper(thisCtx, {id: '5981fbed98141579627e9abc'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -606,8 +606,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="twitter"}}
             callHasHelper(thisCtx, {any: 'twitter'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on a single property (fail)', function () {
@@ -620,8 +620,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="facebook"}}
             callHasHelper(thisCtx, {any: 'facebook'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('matches on multiple properties (pass)', function () {
@@ -634,8 +634,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="twitter, facebook,website"}}
             callHasHelper(thisCtx, {any: 'twitter, facebook,website'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on multiple properties (fail)', function () {
@@ -648,8 +648,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="facebook,website, foo"}}
             callHasHelper(thisCtx, {any: 'facebook,website, foo'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('matches on global properties (pass)', function () {
@@ -665,8 +665,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="@site.twitter, @site.facebook,@site.website"}}
             callHasHelper(thisCtx, {any: '@site.twitter, @site.facebook,@site.website'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on global properties (fail)', function () {
@@ -682,8 +682,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="@site.facebook,@site.website, @site.foo"}}
             callHasHelper(thisCtx, {any: '@site.facebook,@site.website, @not.foo'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('matches on path expressions (pass)', function () {
@@ -698,8 +698,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="author.twitter, author.facebook,author.website"}}
             callHasHelper(thisCtx, {any: 'author.twitter, author.facebook,author.website'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on path expressions (fail)', function () {
@@ -714,8 +714,8 @@ describe('{{#has}} helper', function () {
             // {{#has any="author.facebook,author.website, author.foo"}}
             callHasHelper(thisCtx, {any: 'author.facebook,author.website, fred.foo'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 
@@ -730,8 +730,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="twitter"}}
             callHasHelper(thisCtx, {all: 'twitter'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on a single property (fail)', function () {
@@ -744,8 +744,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="website"}}
             callHasHelper(thisCtx, {all: 'website'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('matches on multiple properties (pass)', function () {
@@ -758,8 +758,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="twitter, facebook"}}
             callHasHelper(thisCtx, {all: 'twitter, facebook'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on multiple properties (fail)', function () {
@@ -772,8 +772,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="facebook,website, foo"}}
             callHasHelper(thisCtx, {all: 'facebook,website, foo'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('matches on global properties (pass)', function () {
@@ -789,8 +789,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="@site.twitter, @site.facebook"}}
             callHasHelper(thisCtx, {all: '@site.twitter, @site.facebook'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on global properties (fail)', function () {
@@ -806,8 +806,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="@site.facebook,@site.website, @site.foo"}}
             callHasHelper(thisCtx, {all: '@site.facebook,@site.website, @not.foo'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
 
         it('matches on path expressions (pass)', function () {
@@ -822,8 +822,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="author.twitter, author.facebook"}}
             callHasHelper(thisCtx, {all: 'author.twitter, author.facebook'});
 
-            fn.called.should.be.true();
-            inverse.called.should.be.false();
+            assert.equal(fn.called, true);
+            assert.equal(inverse.called, false);
         });
 
         it('matches on path expressions (fail)', function () {
@@ -838,8 +838,8 @@ describe('{{#has}} helper', function () {
             // {{#has all="author.facebook,author.website, author.foo"}}
             callHasHelper(thisCtx, {all: 'author.facebook,author.website, fred.foo'});
 
-            fn.called.should.be.false();
-            inverse.called.should.be.true();
+            assert.equal(fn.called, false);
+            assert.equal(inverse.called, true);
         });
     });
 });

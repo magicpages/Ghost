@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
@@ -17,7 +18,7 @@ describe('Unit - services/routing/controllers/previews', function () {
 
     function failTest(done) {
         return function (err) {
-            should.exist(err);
+            assertExists(err);
             done(err);
         };
     }
@@ -82,7 +83,7 @@ describe('Unit - services/routing/controllers/previews', function () {
 
     it('should render post', function (done) {
         controllers.previews(req, res, failTest(done)).then(function () {
-            renderStub.called.should.be.true();
+            assert.equal(renderStub.called, true);
             done();
         }).catch(done);
     });

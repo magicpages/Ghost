@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const configUtils = require('../../../utils/config-utils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
 const cheerio = require('cheerio');
@@ -24,9 +24,7 @@ const excludedNodes = [
     'tk',
     'at-link',
     'at-link-search',
-    'zwnj',
-    // in-development nodes
-    'transistor'
+    'zwnj'
 ];
 
 /**

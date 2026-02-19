@@ -1,11 +1,11 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
-import SniperLinkButton from '../common/sniper-link-button';
+import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
-import {isAndroidChrome} from '../../utils/is-android-chrome';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -163,16 +163,9 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderCloseButton() {
-        const {site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
-        if (isSniperLinksEnabled && sniperLinks) {
-            return (
-                <SniperLinkButton
-                    href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                    label={t('Open email')}
-                    brandColor={this.context.brandColor}
-                />
-            );
+        const {inboxLinks} = this.context;
+        if (inboxLinks && !isIos(navigator)) {
+            return <InboxLinkButton inboxLinks={inboxLinks} />;
         } else {
             return (
                 <ActionButton
@@ -240,8 +233,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderOTCForm() {
-        const {action, actionErrorMessage, otcRef, site, sniperLinks} = this.context;
-        const isSniperLinksEnabled = Boolean(site.labs?.sniperlinks);
+        const {action, actionErrorMessage, otcRef, inboxLinks} = this.context;
         const errors = this.state.errors || {};
 
         if (!otcRef) {
@@ -284,23 +276,20 @@ export default class MagicLinkPage extends React.Component {
                     }
                 </section>
 
-                <footer className='gh-portal-signin-footer'>
-                    <ActionButton
-                        style={{width: '100%'}}
-                        onClick={e => this.handleSubmit(e)}
-                        brandColor={this.context.brandColor}
-                        label={isRunning ? t('Verifying...') : t('Continue')}
-                        isRunning={isRunning}
-                        retry={isError}
-                        disabled={isRunning}
-                    />
-                    {isSniperLinksEnabled && sniperLinks ? (
-                        <SniperLinkButton
-                            href={isAndroidChrome(navigator) ? sniperLinks.android : sniperLinks.desktop}
-                            label={t('Open email')}
+                <footer className='gh-portal-signin-footer gh-button-row'>
+                    {inboxLinks && !isIos(navigator) && !this.state.otc ? (
+                        <InboxLinkButton inboxLinks={inboxLinks} />
+                    ) : (
+                        <ActionButton
+                            style={{width: '100%'}}
+                            onClick={e => this.handleSubmit(e)}
                             brandColor={this.context.brandColor}
+                            label={isRunning ? t('Verifying...') : t('Continue')}
+                            isRunning={isRunning}
+                            retry={isError}
+                            disabled={isRunning}
                         />
-                    ) : null}
+                    )}
                 </footer>
             </form>
         );

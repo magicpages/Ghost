@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const getCoverImage = require('../../../../core/frontend/meta/cover-image');
 
 describe('getCoverImage', function () {
@@ -9,8 +9,8 @@ describe('getCoverImage', function () {
                 cover_image: '/content/images/my-test-image.jpg'
             }
         });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+        assert.notEqual(coverImageUrl, '/content/images/my-test-image.jpg');
+        assert.match(coverImageUrl, /\/content\/images\/my-test-image\.jpg$/);
     });
 
     it('should return absolute cover image url for author', function () {
@@ -20,8 +20,8 @@ describe('getCoverImage', function () {
                 cover_image: '/content/images/my-test-image.jpg'
             }
         });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+        assert.notEqual(coverImageUrl, '/content/images/my-test-image.jpg');
+        assert.match(coverImageUrl, /\/content\/images\/my-test-image\.jpg$/);
     });
 
     it('should return absolute image url for post', function () {
@@ -31,8 +31,8 @@ describe('getCoverImage', function () {
                 feature_image: '/content/images/my-test-image.jpg'
             }
         });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
+        assert.notEqual(coverImageUrl, '/content/images/my-test-image.jpg');
+        assert.match(coverImageUrl, /\/content\/images\/my-test-image\.jpg$/);
     });
 
     it('should return null if missing image', function () {
@@ -40,7 +40,7 @@ describe('getCoverImage', function () {
             context: ['post'],
             post: {}
         });
-        should(coverImageUrl).equal(null);
+        assert.equal(coverImageUrl, null);
     });
 
     it('should return null if author missing cover', function () {
@@ -48,7 +48,7 @@ describe('getCoverImage', function () {
             context: ['author'],
             author: {}
         });
-        should(coverImageUrl).equal(null);
+        assert.equal(coverImageUrl, null);
     });
 
     it('should return null if home missing cover', function () {
@@ -56,6 +56,6 @@ describe('getCoverImage', function () {
             context: ['home'],
             home: {}
         });
-        should(coverImageUrl).equal(null);
+        assert.equal(coverImageUrl, null);
     });
 });

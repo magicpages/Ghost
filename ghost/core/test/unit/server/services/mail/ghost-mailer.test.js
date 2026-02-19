@@ -1,12 +1,12 @@
 const dns = require('dns');
-const should = require('should');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
 let mailer;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const emailAddress = require('../../../../../core/server/services/email-address');
 
 // Mock SMTP config
@@ -56,17 +56,17 @@ describe('Mail: Ghostmailer', function () {
     it('should attach mail provider to ghost instance', function () {
         mailer = new mail.GhostMailer();
 
-        should.exist(mailer);
-        mailer.should.have.property('send').and.be.a.Function();
+        assertExists(mailer);
+        assert.equal(typeof mailer.send, 'function');
     });
 
     it('should setup SMTP transport on initialization', function () {
         configUtils.set({mail: SMTP});
         mailer = new mail.GhostMailer();
 
-        mailer.should.have.property('transport');
-        mailer.transport.transporter.name.should.eql('SMTP');
-        mailer.transport.sendMail.should.be.a.Function();
+        assert('transport' in mailer);
+        assert.equal(mailer.transport.transporter.name, 'SMTP');
+        assert.equal(typeof mailer.transport.sendMail, 'function');
     });
 
     it('should fallback to direct if config is empty', function () {
@@ -74,8 +74,8 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.should.have.property('transport');
-        mailer.transport.transporter.name.should.eql('SMTP (direct)');
+        assert('transport' in mailer);
+        assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
     });
 
     it('sends valid message successfully ', function (done) {
@@ -83,12 +83,12 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.transport.transporter.name.should.eql('Stub');
+        assert.equal(mailer.transport.transporter.name, 'Stub');
 
         mailer.send(mailDataNoServer).then(function (response) {
-            should.exist(response.response);
-            should.exist(response.envelope);
-            response.envelope.to.should.containEql('joe@example.com');
+            assertExists(response.response);
+            assertExists(response.envelope);
+            assert(response.envelope.to.includes('joe@example.com'));
 
             done();
         }).catch(done);
@@ -99,12 +99,12 @@ describe('Mail: Ghostmailer', function () {
 
         mailer = new mail.GhostMailer();
 
-        mailer.transport.transporter.name.should.eql('Stub');
+        assert.equal(mailer.transport.transporter.name, 'Stub');
 
         mailer.send(mailDataNoServer).then(function () {
             done(new Error('Stub did not error'));
         }).catch(function (error) {
-            error.message.should.containEql('Stub made a boo boo :(');
+            assert(error.message.includes('Stub made a boo boo :('));
             done();
         }).catch(done);
     });
@@ -112,9 +112,9 @@ describe('Mail: Ghostmailer', function () {
     it('should fail to send messages when given insufficient data', async function () {
         mailer = new mail.GhostMailer();
 
-        await mailer.send().should.be.rejectedWith('Incomplete message data.');
-        await mailer.send({subject: '123'}).should.be.rejectedWith('Incomplete message data.');
-        await mailer.send({subject: '', html: '123'}).should.be.rejectedWith('Incomplete message data.');
+        await assert.rejects(mailer.send(), {message: 'Incomplete message data.'});
+        await assert.rejects(mailer.send({subject: '123'}), {message: 'Incomplete message data.'});
+        await assert.rejects(mailer.send({subject: '', html: '123'}), {message: 'Incomplete message data.'});
     });
 
     describe('Direct', function () {
@@ -132,17 +132,17 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', async function () {
-            mailer.transport.transporter.name.should.eql('SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
             await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
         });
 
         it('return correct failure message for no mail server at this address', async function () {
-            mailer.transport.transporter.name.should.eql('SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
             await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
         });
 
         it('return correct failure message for incomplete data', async function () {
-            mailer.transport.transporter.name.should.eql('SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
             await assert.rejects(mailer.send(mailDataIncomplete), /Incomplete message data/);
         });
     });
@@ -166,7 +166,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"Blog Title" <static@example.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"Blog Title" <static@example.com>');
         });
 
         describe('should fall back to [blog.title] <noreply@[blog.url]>', function () {
@@ -187,7 +187,7 @@ describe('Mail: Ghostmailer', function () {
                     html: 'content'
                 });
 
-                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@default.com>');
+                assert.equal(mailer.sendMail.firstCall.args[0].from, '"Test" <noreply@default.com>');
             });
 
             it('trailing slash', async function () {
@@ -200,7 +200,7 @@ describe('Mail: Ghostmailer', function () {
                     html: 'content'
                 });
 
-                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@default.com>');
+                assert.equal(mailer.sendMail.firstCall.args[0].from, '"Test" <noreply@default.com>');
             });
 
             it('strip port', async function () {
@@ -213,7 +213,7 @@ describe('Mail: Ghostmailer', function () {
                     html: 'content'
                 });
 
-                mailer.sendMail.firstCall.args[0].from.should.equal('"Test" <noreply@default.com>');
+                assert.equal(mailer.sendMail.firstCall.args[0].from, '"Test" <noreply@default.com>');
             });
 
             it('Escape title', async function () {
@@ -229,7 +229,7 @@ describe('Mail: Ghostmailer', function () {
                     html: 'content'
                 });
 
-                mailer.sendMail.firstCall.args[0].from.should.equal('"Test\\"" <noreply@default.com>');
+                assert.equal(mailer.sendMail.firstCall.args[0].from, '"Test\\"" <noreply@default.com>');
             });
         });
 
@@ -248,7 +248,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"bar" <from@default.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"bar" <from@default.com>');
         });
 
         it('should attach blog title', async function () {
@@ -267,7 +267,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"Test" <from@default.com>');
 
             // only from set
             configUtils.set({mail: {from: 'from@default.com'}});
@@ -278,7 +278,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"Test" <from@default.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"Test" <from@default.com>');
         });
 
         it('should ignore theme title if from address is Title <email@address.com> format', async function () {
@@ -295,7 +295,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"R2D2" <from@default.com>');
 
             // only from set
             configUtils.set({mail: {from: '"R2D2" <from@default.com>'}});
@@ -305,7 +305,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"R2D2" <from@default.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"R2D2" <from@default.com>');
         });
 
         it('should use default title if not theme title is provided', async function () {
@@ -323,7 +323,7 @@ describe('Mail: Ghostmailer', function () {
                 html: 'content'
             });
 
-            sendMailSpy.firstCall.args[0].from.should.equal('"Ghost at default.com" <noreply@default.com>');
+            assert.equal(sendMailSpy.firstCall.args[0].from, '"Ghost at default.com" <noreply@default.com>');
         });
     });
 
@@ -350,10 +350,10 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
-            sentMessage['o:tag'].should.containEql('transactional-email');
-            sentMessage['o:tag'].should.containEql('blog-123123');
-            sentMessage['o:tracking-opens'].should.equal(true);
+            assert(Array.isArray(sentMessage['o:tag']));
+            assert(sentMessage['o:tag'].includes('transactional-email'));
+            assert(sentMessage['o:tag'].includes('blog-123123'));
+            assert.equal(sentMessage['o:tracking-opens'], true);
         });
 
         it('should add tags but not enable open tracking when email tracking is disabled', async function () {
@@ -373,10 +373,10 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.be.an.Array();
-            sentMessage['o:tag'].should.containEql('transactional-email');
-            sentMessage['o:tag'].should.containEql('blog-123123');
-            should.not.exist(sentMessage['o:tracking-opens']);
+            assert(Array.isArray(sentMessage['o:tag']));
+            assert(sentMessage['o:tag'].includes('transactional-email'));
+            assert(sentMessage['o:tag'].includes('blog-123123'));
+            assert.equal(sentMessage['o:tracking-opens'], undefined);
         });
 
         it('should not add site ID tag when site ID is missing', async function () {
@@ -396,8 +396,8 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            sentMessage['o:tag'].should.containEql('transactional-email');
-            sentMessage['o:tag'].should.not.containEql('blog-123123');
+            assert(sentMessage['o:tag'].includes('transactional-email'));
+            assert(!sentMessage['o:tag'].includes('blog-123123'));
         });
 
         it('should not add tag when not using Mailgun transport', async function () {
@@ -416,7 +416,7 @@ describe('Mail: Ghostmailer', function () {
             });
 
             const sentMessage = sendMailSpy.firstCall.args[0];
-            should.not.exist(sentMessage['o:tag']);
+            assert.equal(sentMessage['o:tag'], undefined);
         });
     });
 });

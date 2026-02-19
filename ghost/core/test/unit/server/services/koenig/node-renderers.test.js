@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
 const nodeRenderers = require('../../../../../core/server/services/koenig/node-renderers');
 
@@ -15,9 +15,7 @@ const excludedNodes = [
     'tk',
     'at-link',
     'at-link-search',
-    'zwnj',
-    // in-development nodes
-    'transistor'
+    'zwnj'
 ];
 
 // remove nodes with the above type or that don't have a getType method

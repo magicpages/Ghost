@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const helpers = require('../../../../../core/frontend/services/helpers');
 const AppProxy = require('../../../../../core/frontend/services/apps/proxy');
@@ -19,10 +20,10 @@ describe('Apps', function () {
         it('creates a ghost proxy', function () {
             const appProxy = AppProxy.getInstance('TestApp');
 
-            should.exist(appProxy.helperService);
-            should.exist(appProxy.helperService.registerAlias);
-            should.exist(appProxy.helperService.registerDir);
-            should.exist(appProxy.helperService.registerHelper);
+            assertExists(appProxy.helperService);
+            assertExists(appProxy.helperService.registerAlias);
+            assertExists(appProxy.helperService.registerDir);
+            assertExists(appProxy.helperService.registerHelper);
         });
 
         it('allows helper registration', function () {
@@ -31,7 +32,7 @@ describe('Apps', function () {
 
             appProxy.helperService.registerHelper('myTestHelper', sinon.stub().returns('test result'));
 
-            registerSpy.called.should.equal(true);
+            assert.equal(registerSpy.called, true);
         });
     });
 });

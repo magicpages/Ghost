@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const path = require('path');
 const rewire = require('rewire');
 const _ = require('lodash');
@@ -45,7 +45,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('database:client').should.eql('test');
+            assert.equal(customConfig.get('database:client'), 'test');
         });
 
         it('argv is stronger than env parameter', function () {
@@ -57,7 +57,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('database:client').should.eql('stronger');
+            assert.equal(customConfig.get('database:client'), 'stronger');
         });
 
         it('argv or env is NOT stronger than overrides', function () {
@@ -69,7 +69,7 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('paths:corePath').should.not.containEql('try-to-override');
+            assert(!customConfig.get('paths:corePath').includes('try-to-override'));
         });
 
         it('overrides is stronger than every other config file', function () {
@@ -78,13 +78,14 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('paths:corePath').should.not.containEql('try-to-override');
-            customConfig.get('database:client').should.eql('sqlite3');
-            customConfig.get('database:connection:filename').should.eql('/hehe.db');
-            customConfig.get('database:debug').should.eql(true);
-            customConfig.get('url').should.eql('http://localhost:2368');
-            customConfig.get('logging:level').should.eql('error');
-            customConfig.get('logging:transports').should.eql(['stdout']);
+            assert(!customConfig.get('paths:corePath').includes('try-to-override'));
+            assert.equal(customConfig.get('database:client'), 'sqlite3');
+            // Note: database:connection:filename is now set via process.env in overrides.js
+            // for concurrent test isolation, so we skip asserting the config file value
+            assert.equal(customConfig.get('database:debug'), true);
+            // Note: url is now set via process.env in overrides.js for dynamic port allocation
+            assert.equal(customConfig.get('logging:level'), 'error');
+            assert.deepEqual(customConfig.get('logging:transports'), ['stdout']);
         });
 
         it('should load JSONC files', function () {
@@ -94,8 +95,8 @@ describe('Config Loader', function () {
                 customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
             });
 
-            customConfig.get('site_uuid').should.eql('a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
-            should.not.exist(customConfig.get('commented'));
+            assert.equal(customConfig.get('site_uuid'), 'a58fe20c-0af0-4fc6-9b1a-20873d5b7d03');
+            assert.equal(customConfig.get('commented'), undefined);
         });
     });
 
@@ -107,7 +108,7 @@ describe('Config Loader', function () {
             // NOTE: using `Object.keys` here instead of `should.have.keys` assertion
             //       because when `have.keys` fails there's no useful diff
             //       and it doesn't make sure to check for "extra" keys
-            Object.keys(pathConfig).should.eql([
+            assert.deepEqual(Object.keys(pathConfig), [
                 'contentPath',
                 'fixtures',
                 'defaultSettings',
@@ -130,15 +131,15 @@ describe('Config Loader', function () {
             const pathConfig = configUtils.config.get('paths');
             const appRoot = path.resolve(__dirname, '../../../../');
 
-            pathConfig.should.have.property('appRoot', appRoot);
+            assert.equal(pathConfig.appRoot, appRoot);
         });
 
         it('should allow specific properties to be user defined', function () {
             const contentPath = path.join(configUtils.config.get('paths').appRoot, 'otherContent', '/');
 
             configUtils.set('paths:contentPath', contentPath);
-            configUtils.config.get('paths').should.have.property('contentPath', contentPath);
-            configUtils.config.getContentPath('images').should.eql(contentPath + 'images/');
+            assert.equal(configUtils.config.get('paths').contentPath, contentPath);
+            assert.equal(configUtils.config.getContentPath('images'), contentPath + 'images/');
         });
     });
 });

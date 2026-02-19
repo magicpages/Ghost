@@ -1,9 +1,10 @@
 import NiceModal from '@ebay/nice-modal-react';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import {Button, Hint, Modal, TextField} from '@tryghost/admin-x-design-system';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
 
 import TestEmailDropdown from './test-email-dropdown';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -47,11 +48,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const normalizedLexical = useRef<string>(automatedEmail?.lexical || '');
+    const hasEditorBeenFocused = useRef(false);
     const handleError = useHandleError();
     const {settings} = useGlobalData();
-    const [siteTitle, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'default_email_address']);
+    const [siteTitle] = getSettingValues<string>(settings, ['title']);
+    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmail);
 
-    const {formState, saveState, updateForm, handleSave, okProps, errors, validate} = useForm({
+    const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors, validate} = useForm({
         initialState: {
             subject: automatedEmail?.subject || 'Welcome',
             lexical: automatedEmail?.lexical || ''
@@ -111,8 +115,27 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         };
     }, []);
 
-    const senderEmail = automatedEmail?.sender_email || defaultEmailAddress;
-    const replyToEmail = automatedEmail?.sender_reply_to || defaultEmailAddress;
+    // The editor normalizes content on mount (e.g., processing {name} templates),
+    // which triggers onChange even without user edits. We track whether the editor
+    // has ever been focused - normalization happens before focus is possible, so any
+    // onChange before first focus is normalization. After focus, we compare against
+    // the normalized baseline to determine dirty state.
+    const handleEditorChange = useCallback((lexical: string) => {
+        if (!hasEditorBeenFocused.current) {
+            // Editor hasn't been focused yet = must be normalization
+            normalizedLexical.current = lexical;
+            setFormState(state => ({...state, lexical}));
+            return;
+        }
+
+        // Editor has been focused = compare to baseline
+        if (lexical !== normalizedLexical.current) {
+            updateForm(state => ({...state, lexical}));
+        } else {
+            // Content reverted to normalized state - don't mark dirty
+            setFormState(state => ({...state, lexical}));
+        }
+    }, [setFormState, updateForm]);
 
     return (
         <Modal
@@ -153,15 +176,15 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     <div className='flex items-center'>
                         <div className='w-20 font-semibold'>From:</div>
                         <div className='flex grow items-center gap-1'>
-                            <span>{automatedEmail?.sender_name || siteTitle}</span>
-                            <span className='text-grey-700 dark:text-grey-400'>{`<${senderEmail}>`}</span>
+                            <span>{resolvedSenderName}</span>
+                            <span className='text-grey-700 dark:text-grey-400'>{`<${resolvedSenderEmail}>`}</span>
                         </div>
                     </div>
-                    {replyToEmail !== senderEmail && (
+                    {hasDistinctReplyTo && (
                         <div className='flex items-center py-0.5'>
                             <div className='w-20 font-semibold'>Reply-to:</div>
                             <div className='grow text-grey-700 dark:text-grey-400'>
-                                {replyToEmail}
+                                {resolvedReplyToEmail}
                             </div>
                         </div>
                     )}
@@ -181,14 +204,19 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                     </div>
                 </div>
                 <div className='flex grow flex-col bg-grey-50 p-8 dark:bg-grey-975'>
-                    <div className={`mx-auto w-full max-w-[600px] grow rounded border bg-white p-8 shadow-sm dark:bg-grey-950/25 dark:shadow-none ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}>
+                    <div
+                        className={`mx-auto w-full max-w-[600px] grow rounded border bg-white p-8 shadow-sm dark:bg-grey-950/25 dark:shadow-none ${errors.lexical ? 'border-red' : 'border-grey-200 dark:border-grey-925'}`}
+                        onFocus={() => {
+                            hasEditorBeenFocused.current = true;
+                        }}
+                    >
                         <MemberEmailEditor
                             key={automatedEmail?.id || 'new'}
                             className='welcome-email-editor'
                             placeholder='Write your welcome email content...'
                             singleParagraph={false}
                             value={formState.lexical}
-                            onChange={lexical => updateForm(state => ({...state, lexical}))}
+                            onChange={handleEditorChange}
                         />
                     </div>
                     {errors.lexical && <Hint className='ml-8 mr-auto mt-2 max-w-[600px]' color='red'>{errors.lexical}</Hint>}
