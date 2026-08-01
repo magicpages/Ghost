@@ -109,6 +109,20 @@ const buildPreviousPostSnapshotWithTiersPublished = ({tiersCount, published}) =>
     };
 };
 
+// The replay loads each post fresh, so unlike an in-flight edit it carries no
+// pending revision.
+const bulkTaggedPostSnapshot = () => {
+    const snapshot = buildPostSnapshotWithTiersAndTags({
+        published: false,
+        tiersCount: 2,
+        tags: true
+    });
+
+    delete snapshot.post_revisions;
+
+    return snapshot;
+};
+
 describe('post.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
@@ -466,6 +480,57 @@ describe('post.* events', function () {
                         tiersCount: 2,
                         tags: false
                     })
+                }
+            });
+    });
+
+    it('post.tag.attached event is triggered by a bulk tag add', async function () {
+        const webhookURL = 'https://test-webhook-receiver.com/bulk-post-tag-attached/';
+        await webhookMockReceiver.mock(webhookURL);
+        await fixtureManager.insertWebhook({
+            event: 'post.tag.attached',
+            url: webhookURL
+        });
+
+        const res = await adminAPIAgent
+            .post('posts/')
+            .body({
+                posts: [{
+                    title: 'test bulk post tag attached webhook',
+                    status: 'draft',
+                    lexical: fixtureManager.get('posts', 1).lexical
+                }]
+            })
+            .expectStatus(201);
+
+        const id = res.body.posts[0].id;
+
+        await adminAPIAgent
+            .put(`posts/bulk/?filter=${encodeURIComponent(`id:${id}`)}`)
+            .body({
+                bulk: {
+                    action: 'addTag',
+                    meta: {
+                        tags: [{name: 'Bulk webhook tag'}]
+                    }
+                }
+            })
+            .expectStatus(200);
+
+        await webhookMockReceiver.receivedRequest();
+
+        webhookMockReceiver
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                'content-length': anyContentLength,
+                'user-agent': anyGhostAgent
+            })
+            .matchBodySnapshot({
+                post: {
+                    current: bulkTaggedPostSnapshot(),
+                    // A replayed event reports no changed attributes, so there
+                    // is no previous state to send.
+                    previous: {}
                 }
             });
     });

@@ -159,9 +159,9 @@ class Users {
         // manually add an entry in the Actions table that specifies the number of posts edited; see #bulkAddTags for similar logic
         await this.models.Post.addActions('edited', usersPostIds, {transacting, context});
 
-        // dispatch event to ensure collections are updated
+        // dispatch event so the model events these raw writes skipped get replayed
         const {PostsBulkAddTagsEvent} = require('../../shared/events-ts');
-        DomainEvents.dispatch(PostsBulkAddTagsEvent.create(usersPostIds));
+        DomainEvents.dispatch(PostsBulkAddTagsEvent.create(usersPostIds, [tag.get('id')]));
     }
 
     /**

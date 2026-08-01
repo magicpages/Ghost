@@ -179,7 +179,7 @@ class PostsService {
             }
 
             const bulkResult = await this.#bulkAddTags({tags: data.meta.tags}, {filter: options.filter, context: options.context});
-            DomainEvents.dispatch(PostsBulkAddTagsEvent.create(bulkResult.editIds));
+            DomainEvents.dispatch(PostsBulkAddTagsEvent.create(bulkResult.editIds, bulkResult.tagIds));
 
             return bulkResult;
         }
@@ -195,7 +195,7 @@ class PostsService {
      * @param {string} options.filter - An NQL Filter
      * @param {object} options.context
      * @param {object} [options.transacting]
-     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[]}>}
+     * @returns {Promise<{successful: number, unsuccessful: number, editIds: string[], tagIds: string[]}>}
      */
     async #bulkAddTags(data, options) {
         if (!options.transacting) {
@@ -232,11 +232,23 @@ class PostsService {
             }));
         }, []);
 
+        const editIds = postRows.map(p => p.id);
+
         await options.transacting('posts_tags').insert(postTags);
-        await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
+
+        // Attaching a tag only writes `posts_tags`, so without this the posts
+        // themselves look untouched to anything comparing `updated_at` — which
+        // a single-post edit does bump. `bulkEdit` logs the 'edited' actions.
+        await this.models.Post.bulkEdit(editIds, 'posts', {
+            data: {updated_at: new Date()},
+            transacting: options.transacting,
+            context: options.context,
+            throwErrors: true
+        });
 
         return {
-            editIds: postRows.map(p => p.id),
+            editIds,
+            tagIds: data.tags.map(tag => tag.id),
             successful: postRows.length,
             unsuccessful: 0
         };

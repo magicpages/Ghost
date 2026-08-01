@@ -334,6 +334,7 @@ async function initServices({ghostServer} = {}) {
     const indexnow = require('./server/services/indexnow-ping').default;
     const slack = require('./server/services/slack-ping').default;
     const webhooks = require('./server/services/webhooks');
+    const bulkPostEvents = require('./server/services/bulk-post-events').default;
     const postScheduling = require('./server/services/post-scheduling').default;
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
@@ -388,6 +389,7 @@ async function initServices({ghostServer} = {}) {
         emailService.init({ghostServer}),
         emailAnalytics.init(),
         webhooks.listen(),
+        bulkPostEvents.init(),
         comments.init(),
         linkTracking.init(),
         emailSuppressionList.init(),
